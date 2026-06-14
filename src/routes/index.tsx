@@ -1,29 +1,24 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { LegalHeader } from "@/components/legal/LegalHeader";
+import { WorkspaceGrid } from "@/components/legal/WorkspaceGrid";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Your App" },
-      { name: "description", content: "Replace this with a one-sentence description of your app." },
-      { property: "og:title", content: "Your App" },
-      { property: "og:description", content: "Replace this with a one-sentence description of your app." },
+      { title: "دستیار حقوقی هوشمند — مشاوره حقوقی رایگان بر اساس قوانین ایران" },
+      { name: "description", content: "تحلیل حقوقی فوری در ۴۰ حوزه تخصصی حقوق ایران. رایگان، بدون نیاز به ثبت‌نام، با استناد به قوانین مدون." },
+      { property: "og:title", content: "دستیار حقوقی هوشمند" },
+      { property: "og:description", content: "مشاوره حقوقی رایگان با هوش مصنوعی — تحلیل بر اساس قوانین ایران" },
     ],
   }),
-  component: Index,
+  component: HomePage,
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
-function Index() {
+function HomePage() {
   return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
+    <div className="min-h-screen gradient-section">
+      <LegalHeader />
+      <WorkspaceGrid />
     </div>
   );
 }
