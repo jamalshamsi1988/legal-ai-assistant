@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Send, Loader2, RotateCcw, HelpCircle, FileText } from "lucide-react";
+import { Send, Loader2, RotateCcw, HelpCircle, FileText, MessageCirclePlus } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { analyzeLegalQuestion, type LegalAnalysis } from "@/lib/legal-ai.functions";
 import { FileUploadZone, type UploadedFile } from "./FileUploadZone";
 import { LegalResult } from "./LegalResult";
+
+type HistoryTurn = { role: "user" | "assistant"; content: string };
 
 const EXAMPLES = [
   "صاحب‌خانه‌ام بدون اطلاع قبلی قرارداد اجاره را فسخ کرده و مهلت تخلیه داده. آیا این کار قانونی است؟",
@@ -34,6 +36,8 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<LegalAnalysis | null>(null);
   const [error, setError] = useState("");
+  const [history, setHistory] = useState<HistoryTurn[]>([]);
+  const [followUp, setFollowUp] = useState("");
 
   const submit = async (detailed: boolean) => {
     if (question.trim().length < 15) {
@@ -61,6 +65,41 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
         },
       });
       setResult(data);
+      setHistory([
+        { role: "user", content: question },
+        { role: "assistant", content: JSON.stringify(data) },
+      ]);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "خطا در تحلیل سوال";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitFollowUp = async () => {
+    if (followUp.trim().length < 10) {
+      setError("سوال پیگیری باید حداقل ۱۰ کاراکتر باشد.");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      const data = await analyze({
+        data: {
+          question: followUp,
+          workspaceSlug,
+          workspaceName,
+          history,
+        },
+      });
+      setResult(data);
+      setHistory((h) => [
+        ...h,
+        { role: "user", content: followUp },
+        { role: "assistant", content: JSON.stringify(data) },
+      ]);
+      setFollowUp("");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "خطا در تحلیل سوال";
       setError(msg);
@@ -70,6 +109,14 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
   };
 
   const reset = () => {
+    setQuestion("");
+    files.forEach((f) => f.preview && URL.revokeObjectURL(f.preview));
+    setFiles([]);
+    setResult(null);
+    setError("");
+    setHistory([]);
+    setFollowUp("");
+  };
     setQuestion("");
     files.forEach((f) => f.preview && URL.revokeObjectURL(f.preview));
     setFiles([]);
