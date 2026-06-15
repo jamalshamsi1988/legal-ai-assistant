@@ -216,7 +216,40 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
         </div>
       )}
 
-      {result && <LegalResult {...result} workspaceName={workspaceName} />}
+      {result && !loading && <LegalResult {...result} workspaceName={workspaceName} />}
+
+      {result && !loading && (
+        <div className="mt-6 bg-card rounded-2xl shadow-legal border border-border overflow-hidden">
+          <div className="p-3" style={{ backgroundColor: "var(--gold-pale)" }}>
+            <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: "var(--navy)" }}>
+              <MessageCirclePlus className="w-4 h-4" style={{ color: "var(--gold)" }} />
+              سوال پیگیری در همین زمینه
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              برای دریافت توضیح بیشتر یا طرح ابهام، سوال بعدی خود را بپرسید. تاریخچه فقط در همین جلسه نگه‌داری می‌شود.
+            </p>
+          </div>
+          <div className="p-4 space-y-3">
+            <textarea
+              value={followUp}
+              onChange={(e) => { setFollowUp(e.target.value); if (error) setError(""); }}
+              placeholder="مثلاً: اگر طرف مقابل پاسخ نداد چه کنم؟"
+              className="w-full min-h-[90px] border rounded-xl p-3 text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 font-vazir"
+              style={{ backgroundColor: "var(--parchment)", borderColor: "var(--border)" }}
+              disabled={loading}
+            />
+            <button
+              onClick={submitFollowUp}
+              disabled={loading || !followUp.trim()}
+              className="w-full flex items-center justify-center gap-2 gradient-gold font-bold rounded-xl px-5 py-2.5 shadow-gold hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+              style={{ color: "var(--navy)" }}
+            >
+              <Send className="w-4 h-4" />
+              ارسال سوال پیگیری
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
