@@ -135,12 +135,20 @@ export const analyzeLegalQuestion = createServerFn({ method: "POST" })
       }
     }
 
+    const historyMessages = (data.history ?? []).map((t) => ({
+      role: t.role,
+      content: t.content,
+    }));
+
     let text = "";
     try {
       const res = await generateText({
         model,
         system,
-        messages: [{ role: "user", content: userParts as never }],
+        messages: [
+          ...historyMessages,
+          { role: "user", content: userParts as never },
+        ],
         maxOutputTokens: data.detailed ? 8000 : 4000,
       });
       text = res.text ?? "";
