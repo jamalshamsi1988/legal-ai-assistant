@@ -57,12 +57,18 @@ const FileInput = z.object({
   data: z.string(), // base64
 });
 
+const HistoryTurn = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().max(20000),
+});
+
 const AnalyzeInput = z.object({
   question: z.string().min(10).max(8000),
   detailed: z.boolean().optional(),
   workspaceSlug: z.string().optional(),
   workspaceName: z.string().optional(),
   files: z.array(FileInput).max(10).optional(),
+  history: z.array(HistoryTurn).max(20).optional(),
 });
 
 export interface LegalAnalysis {
