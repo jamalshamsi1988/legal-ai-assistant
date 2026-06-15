@@ -1,6 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { ArrowLeft } from "lucide-react";
 import { LegalHeader } from "@/components/legal/LegalHeader";
+import { LegalFooter } from "@/components/legal/LegalFooter";
 import { LegalAssistant } from "@/components/legal/LegalAssistant";
 import { getWorkspace } from "@/data/workspaces";
 
@@ -48,6 +49,7 @@ function WorkspacePage() {
         </div>
       </div>
       <LegalAssistant workspaceSlug={workspace.slug} workspaceName={workspace.name_fa} />
+      <LegalFooter />
     </div>
   );
 }

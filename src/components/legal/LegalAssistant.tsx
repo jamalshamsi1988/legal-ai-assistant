@@ -1,9 +1,11 @@
 import { useState } from "react";
-import { Send, Loader2, RotateCcw, HelpCircle, FileText } from "lucide-react";
+import { Send, Loader2, RotateCcw, HelpCircle, FileText, MessageCirclePlus } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { analyzeLegalQuestion, type LegalAnalysis } from "@/lib/legal-ai.functions";
 import { FileUploadZone, type UploadedFile } from "./FileUploadZone";
 import { LegalResult } from "./LegalResult";
+
+type HistoryTurn = { role: "user" | "assistant"; content: string };
 
 const EXAMPLES = [
   "صاحب‌خانه‌ام بدون اطلاع قبلی قرارداد اجاره را فسخ کرده و مهلت تخلیه داده. آیا این کار قانونی است؟",
@@ -34,6 +36,8 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<LegalAnalysis | null>(null);
   const [error, setError] = useState("");
+  const [history, setHistory] = useState<HistoryTurn[]>([]);
+  const [followUp, setFollowUp] = useState("");
 
   const submit = async (detailed: boolean) => {
     if (question.trim().length < 15) {
@@ -61,6 +65,41 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
         },
       });
       setResult(data);
+      setHistory([
+        { role: "user", content: question },
+        { role: "assistant", content: JSON.stringify(data) },
+      ]);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "خطا در تحلیل سوال";
+      setError(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const submitFollowUp = async () => {
+    if (followUp.trim().length < 10) {
+      setError("سوال پیگیری باید حداقل ۱۰ کاراکتر باشد.");
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      const data = await analyze({
+        data: {
+          question: followUp,
+          workspaceSlug,
+          workspaceName,
+          history,
+        },
+      });
+      setResult(data);
+      setHistory((h) => [
+        ...h,
+        { role: "user", content: followUp },
+        { role: "assistant", content: JSON.stringify(data) },
+      ]);
+      setFollowUp("");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "خطا در تحلیل سوال";
       setError(msg);
@@ -75,7 +114,10 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
     setFiles([]);
     setResult(null);
     setError("");
+    setHistory([]);
+    setFollowUp("");
   };
+
 
   return (
     <main className="container max-w-3xl mx-auto py-8 px-4">
@@ -174,7 +216,40 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
         </div>
       )}
 
-      {result && <LegalResult {...result} workspaceName={workspaceName} />}
+      {result && !loading && <LegalResult {...result} workspaceName={workspaceName} />}
+
+      {result && !loading && (
+        <div className="mt-6 bg-card rounded-2xl shadow-legal border border-border overflow-hidden">
+          <div className="p-3" style={{ backgroundColor: "var(--gold-pale)" }}>
+            <h3 className="font-bold text-sm flex items-center gap-2" style={{ color: "var(--navy)" }}>
+              <MessageCirclePlus className="w-4 h-4" style={{ color: "var(--gold)" }} />
+              سوال پیگیری در همین زمینه
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              برای دریافت توضیح بیشتر یا طرح ابهام، سوال بعدی خود را بپرسید. تاریخچه فقط در همین جلسه نگه‌داری می‌شود.
+            </p>
+          </div>
+          <div className="p-4 space-y-3">
+            <textarea
+              value={followUp}
+              onChange={(e) => { setFollowUp(e.target.value); if (error) setError(""); }}
+              placeholder="مثلاً: اگر طرف مقابل پاسخ نداد چه کنم؟"
+              className="w-full min-h-[90px] border rounded-xl p-3 text-sm leading-relaxed resize-none focus:outline-none focus:ring-2 font-vazir"
+              style={{ backgroundColor: "var(--parchment)", borderColor: "var(--border)" }}
+              disabled={loading}
+            />
+            <button
+              onClick={submitFollowUp}
+              disabled={loading || !followUp.trim()}
+              className="w-full flex items-center justify-center gap-2 gradient-gold font-bold rounded-xl px-5 py-2.5 shadow-gold hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm"
+              style={{ color: "var(--navy)" }}
+            >
+              <Send className="w-4 h-4" />
+              ارسال سوال پیگیری
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
