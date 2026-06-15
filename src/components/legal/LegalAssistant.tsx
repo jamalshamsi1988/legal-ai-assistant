@@ -117,12 +117,7 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
     setHistory([]);
     setFollowUp("");
   };
-    setQuestion("");
-    files.forEach((f) => f.preview && URL.revokeObjectURL(f.preview));
-    setFiles([]);
-    setResult(null);
-    setError("");
-  };
+
 
   return (
     <main className="container max-w-3xl mx-auto py-8 px-4">
