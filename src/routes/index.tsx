@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalHeader } from "@/components/legal/LegalHeader";
 import { WorkspaceGrid } from "@/components/legal/WorkspaceGrid";
+import { LegalFooter } from "@/components/legal/LegalFooter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -19,6 +20,7 @@ function HomePage() {
     <div className="min-h-screen gradient-section">
       <LegalHeader />
       <WorkspaceGrid />
+      <LegalFooter />
     </div>
   );
 }
