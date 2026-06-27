@@ -7,7 +7,7 @@ export interface UploadedFile {
   type: "image" | "pdf";
 }
 
-const MAX_BYTES = 8 * 1024 * 1024; // 8MB per file
+const MAX_BYTES = 20 * 1024 * 1024; // 20MB per file
 const ACCEPT = "image/png,image/jpeg,image/webp,application/pdf";
 
 interface Props {
@@ -27,16 +27,21 @@ export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 5 }:
     setErr("");
     const incoming: UploadedFile[] = [];
     for (const f of Array.from(list)) {
-      if (files.length + incoming.length >= maxFiles) {
+      const type: "image" | "pdf" = f.type.startsWith("image/") ? "image" : "pdf";
+      
+      // Allow unlimited images, but respect maxFiles for PDFs
+      if (type === "pdf" && files.length + incoming.length >= maxFiles) {
         setErr(`حداکثر ${maxFiles} فایل قابل آپلود است.`);
         break;
       }
+      
       if (f.size > MAX_BYTES) {
-        setErr(`فایل «${f.name}» بزرگتر از ۸ مگابایت است.`);
+        setErr(`فایل «${f.name}» بزرگتر از ۲۰ مگابایت است.`);
         continue;
       }
-      const type: "image" | "pdf" = f.type.startsWith("image/") ? "image" : "pdf";
+      
       if (type !== "pdf" && !f.type.startsWith("image/")) continue;
+      
       incoming.push({
         file: f,
         type,
@@ -72,7 +77,7 @@ export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 5 }:
           مدارک خود را اینجا رها کنید یا کلیک کنید
         </p>
         <p className="text-[10px] text-muted-foreground mt-1">
-          PDF یا تصویر — حداکثر ۸ مگابایت هر فایل
+          PDF یا تصویر — حداکثر ۲۰ مگابایت هر فایل
         </p>
         <input
           ref={inputRef}
