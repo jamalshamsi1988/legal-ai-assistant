@@ -180,6 +180,16 @@ export function LegalResult(props: Props) {
 
       {draft && (
         <SectionCard icon={<FileText className="w-4 h-4" />} title="پیش‌نویس لایحه رسمی" accent="red" delay={400}>
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={copyDraft}
+              className="flex items-center gap-1.5 border rounded-lg px-3 py-1.5 text-xs hover:opacity-80"
+              style={{ backgroundColor: "var(--parchment)", color: "var(--navy)", borderColor: "var(--border)" }}
+            >
+              {copiedDraft ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedDraft ? "کپی شد" : "کپی متن لایحه"}
+            </button>
+          </div>
           <div className="rounded-lg p-4 border" style={{ backgroundColor: "var(--parchment)", borderColor: "var(--border)" }}>
             <pre className="text-sm whitespace-pre-wrap leading-relaxed font-vazir">{draft}</pre>
           </div>
