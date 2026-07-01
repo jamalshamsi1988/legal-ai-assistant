@@ -7,8 +7,9 @@ export interface UploadedFile {
   type: "image" | "pdf";
 }
 
-const MAX_BYTES = 20 * 1024 * 1024; // 20MB per file
-const ACCEPT = "image/png,image/jpeg,image/webp,application/pdf";
+const MAX_BYTES = 50 * 1024 * 1024; // 50MB per file
+const MAX_TOTAL_BYTES = 300 * 1024 * 1024; // 300MB total
+const ACCEPT = "image/png,image/jpeg,image/webp,image/heic,image/heif,application/pdf";
 
 interface Props {
   files: UploadedFile[];
@@ -17,7 +18,7 @@ interface Props {
   maxFiles?: number;
 }
 
-export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 5 }: Props) {
+export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 30 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const [err, setErr] = useState("");
@@ -26,22 +27,29 @@ export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 5 }:
     if (!list) return;
     setErr("");
     const incoming: UploadedFile[] = [];
+    let currentTotal = files.reduce((s, x) => s + x.file.size, 0);
+
     for (const f of Array.from(list)) {
       const type: "image" | "pdf" = f.type.startsWith("image/") ? "image" : "pdf";
-      
-      // Allow unlimited images, but respect maxFiles for PDFs
-      if (type === "pdf" && files.length + incoming.length >= maxFiles) {
+
+      if (files.length + incoming.length >= maxFiles) {
         setErr(`حداکثر ${maxFiles} فایل قابل آپلود است.`);
         break;
       }
-      
+
       if (f.size > MAX_BYTES) {
-        setErr(`فایل «${f.name}» بزرگتر از ۲۰ مگابایت است.`);
+        setErr(`فایل «${f.name}» بزرگتر از ۵۰ مگابایت است.`);
         continue;
       }
-      
+
+      if (currentTotal + f.size > MAX_TOTAL_BYTES) {
+        setErr("مجموع حجم فایل‌ها نباید از ۳۰۰ مگابایت بیشتر شود.");
+        break;
+      }
+
       if (type !== "pdf" && !f.type.startsWith("image/")) continue;
-      
+
+      currentTotal += f.size;
       incoming.push({
         file: f,
         type,
@@ -77,8 +85,13 @@ export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 5 }:
           مدارک خود را اینجا رها کنید یا کلیک کنید
         </p>
         <p className="text-[10px] text-muted-foreground mt-1">
-          PDF یا تصویر — حداکثر ۲۰ مگابایت هر فایل
+          PDF یا تصویر — تا ۳۰ فایل، حداکثر ۵۰ مگابایت هر فایل (مجموعاً ۳۰۰ مگابایت)
         </p>
+        {files.length > 0 && (
+          <p className="text-[10px] mt-1" style={{ color: "var(--navy)" }}>
+            {files.length} فایل انتخاب شده — {(files.reduce((s, x) => s + x.file.size, 0) / (1024 * 1024)).toFixed(1)} مگابایت
+          </p>
+        )}
         <input
           ref={inputRef}
           type="file"
@@ -107,7 +120,11 @@ export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 5 }:
                 </div>
               )}
               <span className="flex-1 truncate" style={{ color: "var(--navy)" }}>{f.file.name}</span>
-              <span className="text-muted-foreground">{(f.file.size / 1024).toFixed(0)} KB</span>
+              <span className="text-muted-foreground whitespace-nowrap">
+                {f.file.size >= 1024 * 1024
+                  ? `${(f.file.size / (1024 * 1024)).toFixed(1)} MB`
+                  : `${(f.file.size / 1024).toFixed(0)} KB`}
+              </span>
               <button
                 type="button"
                 onClick={() => removeAt(i)}
