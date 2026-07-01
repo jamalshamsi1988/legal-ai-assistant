@@ -1,6 +1,18 @@
-import { Scale, BookOpen, FileText, ChevronLeft, AlertCircle, Download, ShieldAlert } from "lucide-react";
+import { useState } from "react";
+import { Scale, BookOpen, FileText, ChevronLeft, AlertCircle, Download, ShieldAlert, Copy, Check, Share2 } from "lucide-react";
 import { generateLegalPdf } from "@/lib/generatePdf";
 import type { LegalAnalysis } from "@/lib/legal-ai.functions";
+
+function buildPlainText(a: { summary: string; legalBasis: string[]; analysis: string; nextSteps: string[]; draft: string | null; workspaceName?: string }) {
+  const lines: string[] = [];
+  if (a.workspaceName) lines.push(`حوزه: ${a.workspaceName}`, "");
+  lines.push("خلاصه پرونده:", a.summary || "—", "");
+  if (a.legalBasis.length) { lines.push("مبانی قانونی:"); a.legalBasis.forEach((x, i) => lines.push(`${i + 1}. ${x}`)); lines.push(""); }
+  lines.push("تحلیل حقوقی:", a.analysis, "");
+  if (a.nextSteps.length) { lines.push("اقدامات پیشنهادی:"); a.nextSteps.forEach((x, i) => lines.push(`${i + 1}. ${x}`)); lines.push(""); }
+  if (a.draft) { lines.push("پیش‌نویس لایحه:", a.draft); }
+  return lines.join("\n");
+}
 
 interface Props extends LegalAnalysis {
   workspaceName?: string;
@@ -59,6 +71,35 @@ function SectionCard({
 
 export function LegalResult(props: Props) {
   const { summary, legalBasis, analysis, nextSteps, draft, blocked, block_reason, workspaceName } = props;
+  const [copied, setCopied] = useState(false);
+  const [copiedDraft, setCopiedDraft] = useState(false);
+
+  const copyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(buildPlainText({ summary, legalBasis, analysis, nextSteps, draft, workspaceName }));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch { /* ignore */ }
+  };
+
+  const copyDraft = async () => {
+    if (!draft) return;
+    try {
+      await navigator.clipboard.writeText(draft);
+      setCopiedDraft(true);
+      setTimeout(() => setCopiedDraft(false), 1800);
+    } catch { /* ignore */ }
+  };
+
+  const share = async () => {
+    const text = buildPlainText({ summary, legalBasis, analysis, nextSteps, draft, workspaceName });
+    const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+    if (nav.share) {
+      try { await nav.share({ title: "تحلیل حقوقی", text }); } catch { /* ignore */ }
+    } else {
+      copyAll();
+    }
+  };
 
   if (blocked) {
     return (
@@ -74,7 +115,23 @@ export function LegalResult(props: Props) {
 
   return (
     <div className="space-y-4 mt-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <button
+          onClick={copyAll}
+          className="flex items-center gap-2 border rounded-xl px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+          style={{ backgroundColor: "var(--secondary)", color: "var(--navy)", borderColor: "var(--border)" }}
+        >
+          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          {copied ? "کپی شد" : "کپی همه"}
+        </button>
+        <button
+          onClick={share}
+          className="flex items-center gap-2 border rounded-xl px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+          style={{ backgroundColor: "var(--secondary)", color: "var(--navy)", borderColor: "var(--border)" }}
+        >
+          <Share2 className="w-4 h-4" />
+          اشتراک‌گذاری
+        </button>
         <button
           onClick={() => generateLegalPdf({ summary, legalBasis, analysis, nextSteps, draft, workspaceName })}
           className="flex items-center gap-2 gradient-gold font-bold rounded-xl px-5 py-2.5 shadow-gold hover:opacity-90 transition-all text-sm"
@@ -123,6 +180,16 @@ export function LegalResult(props: Props) {
 
       {draft && (
         <SectionCard icon={<FileText className="w-4 h-4" />} title="پیش‌نویس لایحه رسمی" accent="red" delay={400}>
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={copyDraft}
+              className="flex items-center gap-1.5 border rounded-lg px-3 py-1.5 text-xs hover:opacity-80"
+              style={{ backgroundColor: "var(--parchment)", color: "var(--navy)", borderColor: "var(--border)" }}
+            >
+              {copiedDraft ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedDraft ? "کپی شد" : "کپی متن لایحه"}
+            </button>
+          </div>
           <div className="rounded-lg p-4 border" style={{ backgroundColor: "var(--parchment)", borderColor: "var(--border)" }}>
             <pre className="text-sm whitespace-pre-wrap leading-relaxed font-vazir">{draft}</pre>
           </div>
