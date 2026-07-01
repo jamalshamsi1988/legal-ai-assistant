@@ -85,8 +85,13 @@ export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 30 }
           مدارک خود را اینجا رها کنید یا کلیک کنید
         </p>
         <p className="text-[10px] text-muted-foreground mt-1">
-          PDF یا تصویر — حداکثر ۲۰ مگابایت هر فایل
+          PDF یا تصویر — تا ۳۰ فایل، حداکثر ۵۰ مگابایت هر فایل (مجموعاً ۳۰۰ مگابایت)
         </p>
+        {files.length > 0 && (
+          <p className="text-[10px] mt-1" style={{ color: "var(--navy)" }}>
+            {files.length} فایل انتخاب شده — {(files.reduce((s, x) => s + x.file.size, 0) / (1024 * 1024)).toFixed(1)} مگابایت
+          </p>
+        )}
         <input
           ref={inputRef}
           type="file"
