@@ -71,6 +71,35 @@ function SectionCard({
 
 export function LegalResult(props: Props) {
   const { summary, legalBasis, analysis, nextSteps, draft, blocked, block_reason, workspaceName } = props;
+  const [copied, setCopied] = useState(false);
+  const [copiedDraft, setCopiedDraft] = useState(false);
+
+  const copyAll = async () => {
+    try {
+      await navigator.clipboard.writeText(buildPlainText({ summary, legalBasis, analysis, nextSteps, draft, workspaceName }));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch { /* ignore */ }
+  };
+
+  const copyDraft = async () => {
+    if (!draft) return;
+    try {
+      await navigator.clipboard.writeText(draft);
+      setCopiedDraft(true);
+      setTimeout(() => setCopiedDraft(false), 1800);
+    } catch { /* ignore */ }
+  };
+
+  const share = async () => {
+    const text = buildPlainText({ summary, legalBasis, analysis, nextSteps, draft, workspaceName });
+    const nav = navigator as Navigator & { share?: (data: ShareData) => Promise<void> };
+    if (nav.share) {
+      try { await nav.share({ title: "تحلیل حقوقی", text }); } catch { /* ignore */ }
+    } else {
+      copyAll();
+    }
+  };
 
   if (blocked) {
     return (
@@ -86,7 +115,23 @@ export function LegalResult(props: Props) {
 
   return (
     <div className="space-y-4 mt-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <button
+          onClick={copyAll}
+          className="flex items-center gap-2 border rounded-xl px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+          style={{ backgroundColor: "var(--secondary)", color: "var(--navy)", borderColor: "var(--border)" }}
+        >
+          {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+          {copied ? "کپی شد" : "کپی همه"}
+        </button>
+        <button
+          onClick={share}
+          className="flex items-center gap-2 border rounded-xl px-4 py-2.5 text-sm transition-colors hover:opacity-80"
+          style={{ backgroundColor: "var(--secondary)", color: "var(--navy)", borderColor: "var(--border)" }}
+        >
+          <Share2 className="w-4 h-4" />
+          اشتراک‌گذاری
+        </button>
         <button
           onClick={() => generateLegalPdf({ summary, legalBasis, analysis, nextSteps, draft, workspaceName })}
           className="flex items-center gap-2 gradient-gold font-bold rounded-xl px-5 py-2.5 shadow-gold hover:opacity-90 transition-all text-sm"
