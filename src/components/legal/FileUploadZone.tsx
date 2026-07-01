@@ -120,7 +120,11 @@ export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 30 }
                 </div>
               )}
               <span className="flex-1 truncate" style={{ color: "var(--navy)" }}>{f.file.name}</span>
-              <span className="text-muted-foreground">{(f.file.size / 1024).toFixed(0)} KB</span>
+              <span className="text-muted-foreground whitespace-nowrap">
+                {f.file.size >= 1024 * 1024
+                  ? `${(f.file.size / (1024 * 1024)).toFixed(1)} MB`
+                  : `${(f.file.size / 1024).toFixed(0)} KB`}
+              </span>
               <button
                 type="button"
                 onClick={() => removeAt(i)}
