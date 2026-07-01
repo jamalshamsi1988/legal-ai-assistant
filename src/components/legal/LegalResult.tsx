@@ -1,6 +1,18 @@
-import { Scale, BookOpen, FileText, ChevronLeft, AlertCircle, Download, ShieldAlert } from "lucide-react";
+import { useState } from "react";
+import { Scale, BookOpen, FileText, ChevronLeft, AlertCircle, Download, ShieldAlert, Copy, Check, Share2 } from "lucide-react";
 import { generateLegalPdf } from "@/lib/generatePdf";
 import type { LegalAnalysis } from "@/lib/legal-ai.functions";
+
+function buildPlainText(a: { summary: string; legalBasis: string[]; analysis: string; nextSteps: string[]; draft: string | null; workspaceName?: string }) {
+  const lines: string[] = [];
+  if (a.workspaceName) lines.push(`حوزه: ${a.workspaceName}`, "");
+  lines.push("خلاصه پرونده:", a.summary || "—", "");
+  if (a.legalBasis.length) { lines.push("مبانی قانونی:"); a.legalBasis.forEach((x, i) => lines.push(`${i + 1}. ${x}`)); lines.push(""); }
+  lines.push("تحلیل حقوقی:", a.analysis, "");
+  if (a.nextSteps.length) { lines.push("اقدامات پیشنهادی:"); a.nextSteps.forEach((x, i) => lines.push(`${i + 1}. ${x}`)); lines.push(""); }
+  if (a.draft) { lines.push("پیش‌نویس لایحه:", a.draft); }
+  return lines.join("\n");
+}
 
 interface Props extends LegalAnalysis {
   workspaceName?: string;
