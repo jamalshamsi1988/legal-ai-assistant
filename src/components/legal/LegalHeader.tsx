@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Scale, Gavel, BookOpen, Shield } from "lucide-react";
+import { Scale, Gavel, BookOpen, Shield, History } from "lucide-react";
 import legalHero from "@/assets/legal-hero.jpg";
 
 export function LegalHeader() {
@@ -12,6 +12,16 @@ export function LegalHeader() {
       />
       <div className="absolute inset-0 gradient-hero opacity-95" aria-hidden />
       <div className="relative container max-w-6xl mx-auto px-4 py-12 md:py-16 text-center">
+        <div className="absolute top-3 left-3">
+          <Link
+            to="/history"
+            className="inline-flex items-center gap-1.5 text-xs rounded-lg px-3 py-1.5 border backdrop-blur-sm"
+            style={{ color: "var(--gold)", borderColor: "var(--gold)", backgroundColor: "rgba(0,0,0,0.15)" }}
+          >
+            <History className="w-3.5 h-3.5" />
+            تاریخچه
+          </Link>
+        </div>
         <Link to="/" className="inline-flex items-center justify-center gap-3 mb-4">
           <div className="w-14 h-14 rounded-2xl gradient-gold flex items-center justify-center shadow-gold">
             <Scale className="w-7 h-7" style={{ color: "var(--navy)" }} />

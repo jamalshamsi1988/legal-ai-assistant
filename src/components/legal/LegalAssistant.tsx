@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { analyzeLegalQuestion, type LegalAnalysis } from "@/lib/legal-ai.functions";
 import { FileUploadZone, type UploadedFile } from "./FileUploadZone";
 import { LegalResult } from "./LegalResult";
+import { addHistoryEntry } from "@/lib/history";
 
 type HistoryTurn = { role: "user" | "assistant"; content: string };
 
@@ -69,6 +70,7 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
         { role: "user", content: question },
         { role: "assistant", content: JSON.stringify(data) },
       ]);
+      addHistoryEntry({ question, detailed, workspaceSlug, workspaceName, result: data });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "خطا در تحلیل سوال";
       setError(msg);
@@ -99,6 +101,7 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
         { role: "user", content: followUp },
         { role: "assistant", content: JSON.stringify(data) },
       ]);
+      addHistoryEntry({ question: followUp, workspaceSlug, workspaceName, result: data });
       setFollowUp("");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "خطا در تحلیل سوال";
