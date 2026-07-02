@@ -101,6 +101,7 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
         { role: "user", content: followUp },
         { role: "assistant", content: JSON.stringify(data) },
       ]);
+      addHistoryEntry({ question: followUp, workspaceSlug, workspaceName, result: data });
       setFollowUp("");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "خطا در تحلیل سوال";
