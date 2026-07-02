@@ -92,12 +92,16 @@ export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 100 
           borderColor: drag ? "var(--gold)" : "var(--border)",
         }}
       >
-        <Upload className="w-5 h-5 mx-auto mb-1.5" style={{ color: "var(--navy)" }} />
+        {busy ? (
+          <Loader2 className="w-5 h-5 mx-auto mb-1.5 animate-spin" style={{ color: "var(--navy)" }} />
+        ) : (
+          <Upload className="w-5 h-5 mx-auto mb-1.5" style={{ color: "var(--navy)" }} />
+        )}
         <p className="text-xs" style={{ color: "var(--navy)" }}>
-          مدارک خود را اینجا رها کنید یا کلیک کنید
+          {busy ? "در حال فشرده‌سازی تصاویر..." : "مدارک خود را اینجا رها کنید یا کلیک کنید"}
         </p>
         <p className="text-[10px] text-muted-foreground mt-1">
-          PDF یا تصویر — تا ۳۰ فایل، حداکثر ۵۰ مگابایت هر فایل (مجموعاً ۳۰۰ مگابایت)
+          PDF یا تصویر — تا ۱۰۰ فایل، حداکثر ۵۰ مگابایت هر فایل (مجموعاً ۳۰۰ مگابایت). تصاویر پیش از ارسال به‌صورت خودکار فشرده می‌شوند.
         </p>
         {files.length > 0 && (
           <p className="text-[10px] mt-1" style={{ color: "var(--navy)" }}>
