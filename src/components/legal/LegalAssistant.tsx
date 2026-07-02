@@ -70,6 +70,7 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
         { role: "user", content: question },
         { role: "assistant", content: JSON.stringify(data) },
       ]);
+      addHistoryEntry({ question, detailed, workspaceSlug, workspaceName, result: data });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "خطا در تحلیل سوال";
       setError(msg);
