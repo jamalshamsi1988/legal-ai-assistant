@@ -67,7 +67,7 @@ const AnalyzeInput = z.object({
   detailed: z.boolean().optional(),
   workspaceSlug: z.string().optional(),
   workspaceName: z.string().optional(),
-  files: z.array(FileInput).max(10).optional(),
+  files: z.array(FileInput).max(100).optional(),
   history: z.array(HistoryTurn).max(20).optional(),
 });
 
