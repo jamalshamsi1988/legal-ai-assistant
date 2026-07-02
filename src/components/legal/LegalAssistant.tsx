@@ -198,7 +198,7 @@ export function LegalAssistant({ workspaceSlug, workspaceName }: Props) {
               className="w-full flex items-center justify-center gap-2 font-bold rounded-xl px-5 py-3 hover:opacity-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed text-sm border-2"
               style={{ backgroundColor: "var(--navy)", color: "var(--primary-foreground)", borderColor: "var(--gold)" }}
             >
-              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> در حال تحلیل ویژه...</> : <><FileText className="w-4 h-4" style={{ color: "var(--gold)" }} /> تحلیل ویژه — لایحه مفصل (۲۰۰۰–۳۰۰۰ کلمه)</>}
+              {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> در حال تحلیل ویژه...</> : <><FileText className="w-4 h-4" style={{ color: "var(--gold)" }} /> تحلیل ویژه — لایحه مفصل (۳۰۰۰–۵۰۰۰ کلمه)</>}
             </button>
           </div>
         </div>
