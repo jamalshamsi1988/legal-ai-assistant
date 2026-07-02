@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Upload, X, FileText, Image as ImageIcon } from "lucide-react";
+import { Upload, X, FileText, Image as ImageIcon, Loader2 } from "lucide-react";
+import { compressImageIfPossible } from "@/lib/imageCompression";
 
 export interface UploadedFile {
   file: File;
@@ -18,45 +19,56 @@ interface Props {
   maxFiles?: number;
 }
 
-export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 30 }: Props) {
+export function FileUploadZone({ files, onFilesChange, disabled, maxFiles = 100 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [drag, setDrag] = useState(false);
   const [err, setErr] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  const handleFiles = (list: FileList | null) => {
+  const handleFiles = async (list: FileList | null) => {
     if (!list) return;
     setErr("");
-    const incoming: UploadedFile[] = [];
-    let currentTotal = files.reduce((s, x) => s + x.file.size, 0);
+    setBusy(true);
+    try {
+      const incoming: UploadedFile[] = [];
+      let currentTotal = files.reduce((s, x) => s + x.file.size, 0);
 
-    for (const f of Array.from(list)) {
-      const type: "image" | "pdf" = f.type.startsWith("image/") ? "image" : "pdf";
+      for (const raw of Array.from(list)) {
+        if (files.length + incoming.length >= maxFiles) {
+          setErr(`حداکثر ${maxFiles} فایل قابل آپلود است.`);
+          break;
+        }
 
-      if (files.length + incoming.length >= maxFiles) {
-        setErr(`حداکثر ${maxFiles} فایل قابل آپلود است.`);
-        break;
+        // Compress compressible images client-side before size checks.
+        const f = raw.type.startsWith("image/")
+          ? await compressImageIfPossible(raw)
+          : raw;
+
+        const type: "image" | "pdf" = f.type.startsWith("image/") ? "image" : "pdf";
+
+        if (f.size > MAX_BYTES) {
+          setErr(`فایل «${f.name}» بزرگتر از ۵۰ مگابایت است.`);
+          continue;
+        }
+
+        if (currentTotal + f.size > MAX_TOTAL_BYTES) {
+          setErr("مجموع حجم فایل‌ها نباید از ۳۰۰ مگابایت بیشتر شود.");
+          break;
+        }
+
+        if (type !== "pdf" && !f.type.startsWith("image/")) continue;
+
+        currentTotal += f.size;
+        incoming.push({
+          file: f,
+          type,
+          preview: type === "image" ? URL.createObjectURL(f) : undefined,
+        });
       }
-
-      if (f.size > MAX_BYTES) {
-        setErr(`فایل «${f.name}» بزرگتر از ۵۰ مگابایت است.`);
-        continue;
-      }
-
-      if (currentTotal + f.size > MAX_TOTAL_BYTES) {
-        setErr("مجموع حجم فایل‌ها نباید از ۳۰۰ مگابایت بیشتر شود.");
-        break;
-      }
-
-      if (type !== "pdf" && !f.type.startsWith("image/")) continue;
-
-      currentTotal += f.size;
-      incoming.push({
-        file: f,
-        type,
-        preview: type === "image" ? URL.createObjectURL(f) : undefined,
-      });
+      if (incoming.length) onFilesChange([...files, ...incoming]);
+    } finally {
+      setBusy(false);
     }
-    if (incoming.length) onFilesChange([...files, ...incoming]);
   };
 
   const removeAt = (i: number) => {
