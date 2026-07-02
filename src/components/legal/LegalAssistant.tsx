@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { analyzeLegalQuestion, type LegalAnalysis } from "@/lib/legal-ai.functions";
 import { FileUploadZone, type UploadedFile } from "./FileUploadZone";
 import { LegalResult } from "./LegalResult";
+import { addHistoryEntry } from "@/lib/history";
 
 type HistoryTurn = { role: "user" | "assistant"; content: string };
 
